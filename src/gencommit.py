@@ -153,7 +153,6 @@ def gencommit():
 
     staged_changes = subprocess.check_output(
         ["git", "diff", "--staged", "--name-only"],
-        text=True["git", "diff", "--staged"],
         text=True,
     ).strip()
     if not staged_changes:
