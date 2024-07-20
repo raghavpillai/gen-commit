@@ -4,12 +4,12 @@ with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="autocommit",
-    version="0.1.0",
+    name="gen-commit",
+    version="0.2.0",
     description="Auto-generate git commit messages",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/raghavpillai/autocommit",
+    url="https://github.com/raghavpillai/gen-commit",
     author="Raghav Pillai",
     author_email="raghav@tryspeck.com",
     license="MIT",
@@ -17,7 +17,7 @@ setup(
     install_requires=["openai", "anthropic"],
     entry_points={
         "console_scripts": [
-            "autocommit=autocommit:auto_commit",
+            "gencommit=src:gen_commit",
         ],
     },
 )

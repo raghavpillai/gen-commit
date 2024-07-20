@@ -3,12 +3,12 @@ import subprocess
 import tiktoken
 import argparse
 import xml.etree.ElementTree as ET
-from .src.prompts import (
+from .utils.prompts import (
     COMMIT_PROMPT_SYSTEM,
     COMMIT_PROMPT_NO_DESCRIPTION,
     COMMIT_PROMPT_WITH_DESCRIPTION,
 )
-from .src.llm_wrapper import anthropic_chat, openai_chat
+from .utils.llm_wrapper import anthropic_chat, openai_chat
 
 MAX_LINE_LENGTH: int = 10000
 MAX_TOKENS_ALLOWED: int = 20480
@@ -73,11 +73,24 @@ def generate_commit_message(
     return _format_response_xml(llm_response)
 
 
-def auto_commit():
+def initialize():
+    home_dir: str = os.path.expanduser("~")
+    gen_commit_dir: str = os.path.join(home_dir, ".gen-commit")
+    if not os.path.exists(gen_commit_dir):
+        os.makedirs(gen_commit_dir)
+        config_file: str = os.path.join(gen_commit_dir, "config")
+        with open(config_file, "w") as f:
+            f.write("OPENAI_API_KEY=\nANTHROPIC_API_KEY=")
+
+
+def gen_commit():
     arg_parser: argparse.ArgumentParser = argparse.ArgumentParser()
     arg_parser.add_argument("-m", type=str, help="Commit message")
     arg_parser.add_argument("-d", type=str, help="Commit description")
     arg_parser.add_argument("-o", action="store_true", help="Use OpenAI")
+    arg_parser.add_argument(
+        "--init", "--initialize", action="store_true", help="Initialize gen-commit"
+    )
     arg_parser.add_argument(
         "--version", action="version", version=f"%(prog)s {VERSION}"
     )
@@ -86,6 +99,11 @@ def auto_commit():
     has_message: bool = found_args.m is not None
     has_description: bool = found_args.d is not None
     use_openai: bool = found_args.o
+
+    if found_args.init:
+        initialize()
+        print("gen-commit initialized successfully.")
+        return
 
     try:
         # Check if there are any commits
@@ -121,4 +139,4 @@ def auto_commit():
 
 
 if __name__ == "__main__":
-    auto_commit()
+    gen_commit()

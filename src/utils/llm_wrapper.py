@@ -1,15 +1,19 @@
 import os
 from anthropic import Anthropic
 from openai import OpenAI
-
-ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY") or os.getenv(
-    "ACOMMIT_ANTHROPIC_API_KEY"
-)
-OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY") or os.getenv("ACOMMIT_OPENAI_API_KEY")
+from .read_config import read_config
 
 
 def anthropic_chat(system_prompt: str, user_prompt: str) -> str:
-    client: Anthropic = Anthropic(api_key=ANTHROPIC_API_KEY)
+    config = read_config()
+    api_key: str = config.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+
+    if not api_key:
+        raise ValueError("ANTHROPIC_API_KEY not found in config")
+
+    client: Anthropic = Anthropic(api_key=api_key)
     response = client.messages.create(
         model="claude-3-5-sonnet-20240620",
         system=system_prompt,
@@ -23,7 +27,15 @@ def anthropic_chat(system_prompt: str, user_prompt: str) -> str:
 
 
 def openai_chat(system_prompt: str, user_prompt: str) -> str:
-    client: OpenAI = OpenAI(api_key=OPENAI_API_KEY)
+    config = read_config()
+    api_key: str = config.get("OPENAI_API_KEY")
+    if not api_key:
+        api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY not found in config")
+
+    client: OpenAI = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
