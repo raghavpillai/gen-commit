@@ -10,7 +10,7 @@ from .utils.prompts import (
 )
 from .utils.llm_wrapper import anthropic_chat, openai_chat
 
-MAX_LINE_LENGTH: int = 10000
+MAX_LINE_LENGTH: int = 300
 MAX_TOKENS_ALLOWED: int = 20480
 VERSION: str = "0.1.0"
 

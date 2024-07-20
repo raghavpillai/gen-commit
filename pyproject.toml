@@ -8,6 +8,7 @@ version = "0.2.2"
 dependencies = [
     "openai",
     "anthropic",
+    "tiktoken",
 ]
 requires-python = ">=3.11"
 authors = [
@@ -25,6 +26,9 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/raghavpillai/gen-commit"
 Issues = "https://github.com/raghavpillai/gen-commit/issues"
+
+[project.scripts]
+gencommit = "src.gencommit:gencommit"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]

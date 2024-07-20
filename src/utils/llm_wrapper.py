@@ -1,20 +1,22 @@
 import os
 from anthropic import Anthropic
+from anthropic.types.message import Message
 from openai import OpenAI
+from openai.types.chat import ChatCompletion
 from .read_config import read_config
 
 
 def anthropic_chat(system_prompt: str, user_prompt: str) -> str:
-    config = read_config()
+    config: dict = read_config()
     api_key: str = config.get("ANTHROPIC_API_KEY")
     if not api_key:
         api_key = os.getenv("ANTHROPIC_API_KEY")
 
     if not api_key:
-        raise ValueError("ANTHROPIC_API_KEY not found in config")
+        raise ValueError("ANTHROPIC_API_KEY not found in environment or config")
 
     client: Anthropic = Anthropic(api_key=api_key)
-    response = client.messages.create(
+    response: Message = client.messages.create(
         model="claude-3-5-sonnet-20240620",
         system=system_prompt,
         messages=[
@@ -27,16 +29,16 @@ def anthropic_chat(system_prompt: str, user_prompt: str) -> str:
 
 
 def openai_chat(system_prompt: str, user_prompt: str) -> str:
-    config = read_config()
+    config: dict = read_config()
     api_key: str = config.get("OPENAI_API_KEY")
     if not api_key:
         api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
-        raise ValueError("OPENAI_API_KEY not found in config")
+        raise ValueError("OPENAI_API_KEY not found in environment or config")
 
     client: OpenAI = OpenAI(api_key=api_key)
-    response = client.chat.completions.create(
+    response: ChatCompletion = client.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "system", "content": system_prompt},
