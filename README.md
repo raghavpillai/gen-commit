@@ -1,14 +1,16 @@
 # Gen Commit
 
-Gen Commit automatically generate git commit messages. I'm lazy and don't like to write commit messages. Inspired by [scommit](https://github.com/Globe-Engineer/semantic-commit).
+**Gen Commit** automatically generate git commit messages. I'm lazy and don't like to write commit messages. Inspired by [scommit](https://github.com/Globe-Engineer/semantic-commit).
 
-![Wow!](assets/logs.png)
+<p align="center">
+  <img src="assets/logs.png" alt="Wow!" width="300" height="auto">
+</p>
 
 ---
 
 ## Usage
 
-gencommit works exactly like git commit, but it generates the commit message for you.
+**gencommit** works exactly like git commit, but it generates the commit message for you.
 
 ```bash
 gencommit
