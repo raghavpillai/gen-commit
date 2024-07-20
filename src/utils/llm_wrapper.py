@@ -23,7 +23,7 @@ def anthropic_chat(model: str, system_prompt: str, user_prompt: str) -> str:
             {"role": "user", "content": user_prompt},
         ],
         max_tokens=1024,
-        temperature=0.2,
+        temperature=0,
     )
     return response.content[0].text
 
@@ -45,6 +45,6 @@ def openai_chat(model: str, system_prompt: str, user_prompt: str) -> str:
             {"role": "user", "content": user_prompt},
         ],
         max_tokens=1024,
-        temperature=0.2,
+        temperature=0,
     )
     return response.choices[0].message.content
