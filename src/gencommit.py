@@ -100,7 +100,7 @@ def initialize() -> bool:
             .strip()
             .lower()
         )
-        if user_input != "y" and user_input != "":
+        if user_input not in ["y", ""]:
             print("Initialization cancelled.")
             return False
 
