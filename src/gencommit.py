@@ -151,6 +151,15 @@ def gencommit():
     except subprocess.CalledProcessError:
         commits_exist = False
 
+    staged_changes = subprocess.check_output(
+        ["git", "diff", "--staged", "--name-only"],
+        text=True["git", "diff", "--staged"],
+        text=True,
+    ).strip()
+    if not staged_changes:
+        print("No changes staged for commit.")
+        sys.exit(1)
+
     commit_message: str
     commit_description: str
     if commits_exist:
