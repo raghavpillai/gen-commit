@@ -34,6 +34,12 @@ is the same as
 git commit -a -m "..." -m "..."
 ```
 
+I recommend aliasing it, personally I alias it to `gc`. You can do this by adding the following to your shell configuration file (`.zshrc`, `.bashrc`, etc.)
+
+```bash
+alias gc="gencommit"
+```
+
 ## Installation
 
 ### Prerequisites:
