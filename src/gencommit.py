@@ -151,11 +151,21 @@ def gencommit():
     except subprocess.CalledProcessError:
         commits_exist = False
 
+    if "-a" in unknown_args:
+        # Check for unstaged changes
+        unstaged_changes = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            text=True,
+        ).strip()
+        if not unstaged_changes:
+            print("No changes detected.")
+            sys.exit(1)
+
     staged_changes = subprocess.check_output(
         ["git", "diff", "--staged", "--name-only"],
         text=True,
     ).strip()
-    if not staged_changes:
+    if not staged_changes and "-a" not in unknown_args:
         print("No changes staged for commit.")
         sys.exit(1)
 

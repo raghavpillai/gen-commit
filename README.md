@@ -54,6 +54,18 @@ Install the gen-commit package using pip:
 pip install gen-commit
 ```
 
+If you get
+
+```bash
+error: externally-managed-environment
+```
+
+This means Python now doesn't want you to install this as a system-wide package. You can install it using `pipx` or `venv`, or be lazy and install it via:
+
+```bash
+pip3 install gen-commit --break-system-packages
+```
+
 Once you have it installed, initialize gencommit
 
 ```bash
