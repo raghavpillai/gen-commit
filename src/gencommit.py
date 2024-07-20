@@ -170,7 +170,7 @@ def gencommit():
         commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}" -m "{commit_description}"'
     else:
         commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}"'
-    # os.system(commit_command)
+    os.system(commit_command)
 
 
 if __name__ == "__main__":
