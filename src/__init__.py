@@ -1,1 +1,1 @@
-from .gen_commit import gen_commit
+from .gencommit import gen_commit
