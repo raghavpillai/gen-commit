@@ -44,7 +44,6 @@ def get_llm_func(model_line: str) -> tuple[callable, str]:
 
 
 def _format_response_xml(xml_response: str) -> tuple[str, str]:
-    print(xml_response)
     root_element: ET.Element = ET.fromstring(xml_response)
 
     commit_message: str = (
