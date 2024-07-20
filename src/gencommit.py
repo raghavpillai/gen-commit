@@ -83,7 +83,7 @@ def initialize():
             f.write("OPENAI_API_KEY=\nANTHROPIC_API_KEY=")
 
 
-def gen_commit():
+def gencommit():
     arg_parser: argparse.ArgumentParser = argparse.ArgumentParser()
     arg_parser.add_argument("-m", type=str, help="Commit message")
     arg_parser.add_argument("-d", type=str, help="Commit description")
@@ -139,4 +139,4 @@ def gen_commit():
 
 
 if __name__ == "__main__":
-    gen_commit()
+    gencommit()
