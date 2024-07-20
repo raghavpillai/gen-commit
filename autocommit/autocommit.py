@@ -12,6 +12,7 @@ from .src.llm_wrapper import anthropic_chat, openai_chat
 
 MAX_LINE_LENGTH: int = 10000
 MAX_TOKENS_ALLOWED: int = 20480
+VERSION: str = "0.1.0"
 
 
 def format_diff(diff_text: str) -> str:
@@ -73,16 +74,18 @@ def generate_commit_message(
 
 
 def auto_commit():
-    """Perform a git commit with a generated or provided message."""
-
     arg_parser: argparse.ArgumentParser = argparse.ArgumentParser()
     arg_parser.add_argument("-m", type=str, help="Commit message")
     arg_parser.add_argument("-d", type=str, help="Commit description")
+    arg_parser.add_argument("-o", action="store_true", help="Use OpenAI")
+    arg_parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {VERSION}"
+    )
     found_args, unknown_args = arg_parser.parse_known_args()
 
     has_message: bool = found_args.m is not None
-    has_description: bool = found_args.d is not None or found_args.o is not None
-    use_openai: bool = found_args.o is not None
+    has_description: bool = found_args.d is not None
+    use_openai: bool = found_args.o
 
     try:
         # Check if there are any commits
