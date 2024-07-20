@@ -2,6 +2,8 @@
 
 Gen Commit automatically generate git commit messages. I'm lazy and don't like to write commit messages. Inspired by [scommit](https://github.com/Globe-Engineer/semantic-commit).
 
+![Wow!](assets/logs.png)
+
 ---
 
 ## Usage
