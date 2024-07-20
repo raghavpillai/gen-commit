@@ -17,7 +17,7 @@ setup(
     install_requires=["openai", "anthropic"],
     entry_points={
         "console_scripts": [
-            "gencommit=src:gen_commit",
+            "gencommit=src:gencommit",
         ],
     },
 )
