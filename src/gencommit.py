@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import tiktoken
 import argparse
@@ -9,10 +10,11 @@ from .utils.prompts import (
     COMMIT_PROMPT_WITH_DESCRIPTION,
 )
 from .utils.llm_wrapper import anthropic_chat, openai_chat
+from .utils.config import read_version_from_pyproject, read_config
 
 MAX_LINE_LENGTH: int = 300
 MAX_TOKENS_ALLOWED: int = 20480
-VERSION: str = "0.1.0"
+VERSION: str = read_version_from_pyproject()
 
 
 def format_diff(diff_text: str) -> str:
@@ -28,6 +30,17 @@ def format_diff(diff_text: str) -> str:
         "ADDED:\n" + "\n".join(added_lines) + "\nREMOVED:\n" + "\n".join(removed_lines)
     )
     return formatted_diff_text
+
+
+def get_llm_func(model_line: str) -> tuple[callable, str]:
+    provider, model = model_line.lower().split(":", 1)
+
+    if provider == "openai":
+        return openai_chat, model
+    elif provider == "anthropic":
+        return anthropic_chat, model
+    else:
+        raise ValueError(f"Invalid model: {model}")
 
 
 def _format_response_xml(xml_response: str) -> tuple[str, str]:
@@ -53,9 +66,7 @@ def _format_response_xml(xml_response: str) -> tuple[str, str]:
     return commit_message, commit_description
 
 
-def generate_commit_message(
-    diff_text: str, use_openai: bool = False
-) -> tuple[str, str]:
+def generate_commit_message(diff_text: str) -> tuple[str, str]:
     tokenizer: tiktoken.Encoding = tiktoken.encoding_for_model("gpt-4o")
     if not diff_text:
         return "No changes to commit", ""
@@ -63,47 +74,66 @@ def generate_commit_message(
     token_list: list[int] = tokenizer.encode(diff_text)
     truncated_tokens: list[int] = token_list[:MAX_TOKENS_ALLOWED]
     truncated_diff: str = tokenizer.decode(truncated_tokens)
+    config: dict = read_config()
+    model: str = config.get("MODEL")
+    if not model:
+        raise ValueError("MODEL not found in config")
 
-    llm_chat: callable = openai_chat if use_openai else anthropic_chat
+    llm_func: callable
+    model_name: str
+    llm_func, model_name = get_llm_func(model)
 
-    llm_response: str = llm_chat(
+    llm_response: str = llm_func(
+        model=model_name,
         system_prompt=COMMIT_PROMPT_SYSTEM,
         user_prompt=COMMIT_PROMPT_WITH_DESCRIPTION.format(diffs=truncated_diff),
     )
     return _format_response_xml(llm_response)
 
 
-def initialize():
+def initialize() -> bool:
     home_dir: str = os.path.expanduser("~")
-    gen_commit_dir: str = os.path.join(home_dir, ".gen-commit")
-    if not os.path.exists(gen_commit_dir):
-        os.makedirs(gen_commit_dir)
-        config_file: str = os.path.join(gen_commit_dir, "config")
-        with open(config_file, "w") as f:
-            f.write("OPENAI_API_KEY=\nANTHROPIC_API_KEY=")
+    config_file: str = os.path.join(home_dir, ".gen-commit")
+    if os.path.exists(config_file):
+        user_input = (
+            input(f"Config file already exists at {config_file}. Overwrite? (Y/n): ")
+            .strip()
+            .lower()
+        )
+        if user_input != "y" and user_input != "":
+            print("Initialization cancelled.")
+            return False
+
+    with open(config_file, "w") as f:
+        f.write(
+            "MODEL=anthropic:claude-3-5-sonnet-20240620\nOPENAI_API_KEY=\nANTHROPIC_API_KEY="
+        )
+    return True
 
 
 def gencommit():
     arg_parser: argparse.ArgumentParser = argparse.ArgumentParser()
-    arg_parser.add_argument("-m", type=str, help="Commit message")
-    arg_parser.add_argument("-d", type=str, help="Commit description")
-    arg_parser.add_argument("-o", action="store_true", help="Use OpenAI")
+    arg_parser.add_argument("-m", type=str, help="Override commit message")
+    arg_parser.add_argument("-d", type=str, help="Override commit description")
     arg_parser.add_argument(
         "--init", "--initialize", action="store_true", help="Initialize gen-commit"
     )
     arg_parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {VERSION}"
+        "--version", "--v", action="version", version=f"%(prog)s {VERSION}"
     )
     found_args, unknown_args = arg_parser.parse_known_args()
 
     has_message: bool = found_args.m is not None
     has_description: bool = found_args.d is not None
-    use_openai: bool = found_args.o
 
     if found_args.init:
-        initialize()
-        print("gen-commit initialized successfully.")
-        return
+        success: bool = initialize()
+        if success:
+            print("gen-commit initialized successfully, wrote config to ~/.gen-commit")
+            sys.exit(0)
+        else:
+            print("gen-commit initialization failed.")
+            sys.exit(1)
 
     try:
         # Check if there are any commits
@@ -122,20 +152,18 @@ def gencommit():
         ).strip()
         formatted_diff: str = format_diff(diff_output)
         commit_message, commit_description = generate_commit_message(
-            diff_text=formatted_diff, use_openai=use_openai
+            diff_text=formatted_diff
         )
-        print(commit_message)
-        print(commit_description)
     else:
         commit_message: str = found_args.m if has_message else "Initial commit"
         commit_description: str = found_args.d if has_description else ""
 
-    # commit_command: str
-    # if commit_description:
-    #     commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}" -m "{commit_description}"'
-    # else:
-    #     commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}"'
-    # # os.system(commit_command)
+    commit_command: str
+    if commit_description:
+        commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}" -m "{commit_description}"'
+    else:
+        commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}"'
+    os.system(commit_command)
 
 
 if __name__ == "__main__":
