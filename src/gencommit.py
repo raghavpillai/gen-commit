@@ -88,7 +88,14 @@ def generate_commit_message(diff_text: str) -> tuple[str, str]:
         system_prompt=COMMIT_PROMPT_SYSTEM,
         user_prompt=COMMIT_PROMPT_WITH_DESCRIPTION.format(diffs=truncated_diff),
     )
-    return _format_response_xml(llm_response)
+    try:
+        return _format_response_xml(llm_response)
+    except Exception as e:
+        error_file = os.path.expanduser("~/gen-commit-error.txt")
+        with open(error_file, "w") as f:
+            f.write(f"Error: {str(e)}\n\nRaw response:\n{llm_response}")
+        print(f"Error parsing LLM response. Details written to {error_file}")
+        raise
 
 
 def initialize() -> bool:
@@ -163,7 +170,7 @@ def gencommit():
         commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}" -m "{commit_description}"'
     else:
         commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}"'
-    os.system(commit_command)
+    # os.system(commit_command)
 
 
 if __name__ == "__main__":
