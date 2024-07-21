@@ -1,6 +1,7 @@
 annotated-types==0.7.0
 anthropic==0.31.2
 anyio==4.4.0
+build==1.2.1
 certifi==2024.7.4
 charset-normalizer==3.3.2
 distro==1.9.0
@@ -17,6 +18,7 @@ openai==1.36.1
 packaging==24.1
 pydantic==2.8.2
 pydantic_core==2.20.1
+pyproject_hooks==1.1.0
 PyYAML==6.0.1
 regex==2024.5.15
 requests==2.32.3
