@@ -7,7 +7,7 @@ class GenCommit < Formula
   sha256 "511580b627ec67cf5e7e30b66f0a608f82124621f22b29f3811bdcfd6867f6d6"
   license "MIT"
 
-  depends_on "python@3.11"
+  depends_on "python@3.12"
 
   resource "openai" do
     url "https://files.pythonhosted.org/packages/20/49/df107c1171607610e8f02036971da528e004979dbd04875b2bed9144bc9a/openai-1.36.1.tar.gz"
