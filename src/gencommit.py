@@ -12,8 +12,9 @@ from .utils.prompts import (
 from .utils.llm_wrapper import anthropic_chat, openai_chat
 from .utils.config import read_version_from_pyproject, read_config
 
-MAX_LINE_LENGTH: int = 300
-MAX_TOKENS_ALLOWED: int = 20480
+CONFIG: dict = read_config()
+MAX_LINE_LENGTH: int = CONFIG.get("MAX_LINE_LENGTH", 300)
+MAX_TOKENS_ALLOWED: int = CONFIG.get("MAX_TOKENS_ALLOWED", 20480)
 VERSION: str = read_version_from_pyproject()
 
 
