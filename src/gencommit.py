@@ -34,7 +34,6 @@ def format_diff(diff_text: str) -> str:
 
 def get_llm_func(model_line: str) -> tuple[callable, str]:
     provider, model = model_line.lower().split(":", 1)
-
     if provider == "openai":
         return openai_chat, model
     elif provider == "anthropic":
