@@ -46,7 +46,7 @@ alias gc="gencommit"
 
 ### Prerequisites:
 
-- Python 3.11+
+- Python 3.12+
 
 ### Recommended: Homebrew (macOS and Linux)
 
