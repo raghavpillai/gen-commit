@@ -44,10 +44,6 @@ alias gc="gencommit"
 
 ## Installation
 
-### Prerequisites:
-
-- Python 3.12+
-
 ### Recommended: Homebrew (macOS and Linux)
 
 ```bash
@@ -56,6 +52,10 @@ brew install gen-commit
 ```
 
 ### Python
+
+#### Prerequisites:
+
+- Python 3.12+
 
 Install the gen-commit package using pip:
 
