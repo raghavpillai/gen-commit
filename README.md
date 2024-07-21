@@ -55,7 +55,7 @@ brew install gen-commit
 
 #### Prerequisites:
 
-- Python 3.12+
+- Python 3.11+
 
 Install the gen-commit package using pip:
 
@@ -74,6 +74,8 @@ This means Python now doesn't want you to install this as a system-wide package.
 ```bash
 pip3 install gen-commit --break-system-packages
 ```
+
+### Initialization
 
 Once you have it installed, initialize gencommit
 
