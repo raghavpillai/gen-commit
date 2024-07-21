@@ -1,6 +1,6 @@
 # Gen Commit
 
-**Gen Commit** automatically generate git commit messages. I'm lazy and don't like to write commit messages. Inspired by [scommit](https://github.com/Globe-Engineer/semantic-commit).
+**Gen Commit** uses LLMs to automatically generate git commit messages. I'm lazy and don't like to write commit messages. Inspired by [scommit](https://github.com/Globe-Engineer/semantic-commit).
 
 <p align="center">
   <img src="assets/logs.png" alt="Wow!" width="300" height="auto">
@@ -10,7 +10,7 @@
 
 ## Usage
 
-**gencommit** works exactly like git commit, but it generates the commit message for you.
+**gencommit** works exactly like git commit, but it generates the commit message and description for you.
 
 ```bash
 gencommit
@@ -47,7 +47,7 @@ alias gc="gencommit"
 ### Recommended: Homebrew (macOS and Linux)
 
 ```bash
-brew tap raghavpillai/gen-commit https://github.com/raghavpillai/gen-commit.git
+brew tap raghavpillai/gen-commit
 brew install gen-commit
 ```
 
@@ -91,6 +91,13 @@ Go to `~/.gen-commit` and add your OpenAI or Anthropic API key.
 MODEL=<provider:model (i.e. openai:gpt-4o or anthropic:claude-3-haiku-20240307)>
 OPENAI_API_KEY=<your openai api key>
 ANTHROPIC_API_KEY=<your anthropic api key>
+```
+
+OPTIONAL:
+
+```
+MAX_LINE_LENGTH=<number>
+MAX_TOKENS_ALLOWED=<number>
 ```
 
 At the moment only OpenAI and Anthropic are supported.
