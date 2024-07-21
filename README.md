@@ -48,6 +48,15 @@ alias gc="gencommit"
 
 - Python 3.11+
 
+### Recommended: Homebrew (macOS and Linux)
+
+```bash
+brew tap raghavpillai/gen-commit https://github.com/raghavpillai/gen-commit.git
+brew install gen-commit
+```
+
+### Python
+
 Install the gen-commit package using pip:
 
 ```bash
