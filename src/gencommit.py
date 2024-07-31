@@ -173,7 +173,7 @@ def gencommit():
     commit_description: str
     if commits_exist:
         diff_output: str = subprocess.check_output(
-            ["git", "diff", "HEAD"] + unknown_args, text=True
+            ["git", "diff", "--staged"], text=True
         ).strip()
         formatted_diff: str = format_diff(diff_output)
         commit_message, commit_description = generate_commit_message(
