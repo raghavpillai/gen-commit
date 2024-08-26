@@ -1,5 +1,6 @@
 import os
 import sys
+
 import tomli
 
 HOME_DIR: str = os.path.expanduser("~")

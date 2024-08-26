@@ -11,6 +11,7 @@ dependencies = [
     "tiktoken",
     "tomli",
     "aiohttp",
+    "instructor",
 ]
 requires-python = ">=3.11"
 authors = [
