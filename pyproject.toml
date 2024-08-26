@@ -8,10 +8,10 @@ version = "0.8.0"
 dependencies = [
     "openai",
     "anthropic",
+    "instructor",
     "tiktoken",
     "tomli",
-    "aiohttp",
-    "instructor",
+    "aiohttp"
 ]
 requires-python = ">=3.11"
 authors = [
