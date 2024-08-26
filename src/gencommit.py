@@ -1,21 +1,31 @@
-import os
-import sys
-import subprocess
-import tiktoken
 import argparse
-import xml.etree.ElementTree as ET
+import os
+import subprocess
+import sys
+
+import tiktoken
+from pydantic import BaseModel, Field
+
+from .utils.config import read_config, read_version_from_pyproject
+from .utils.llm_wrapper import anthropic_chat, openai_chat
 from .utils.prompts import (
     COMMIT_PROMPT_SYSTEM,
-    COMMIT_PROMPT_NO_DESCRIPTION,
     COMMIT_PROMPT_WITH_DESCRIPTION,
 )
-from .utils.llm_wrapper import anthropic_chat, openai_chat
-from .utils.config import read_version_from_pyproject, read_config
 
 CONFIG: dict = read_config()
 MAX_LINE_LENGTH: int = CONFIG.get("MAX_LINE_LENGTH", 300)
 MAX_TOKENS_ALLOWED: int = CONFIG.get("MAX_TOKENS_ALLOWED", 20480)
 VERSION: str = read_version_from_pyproject()
+
+
+class CommitMessage(BaseModel):
+    commit_message: str = Field(
+        ..., description="Brief descriptive commit message in no longer than 10 words"
+    )
+    commit_description: str = Field(
+        ..., description="Hyphenated bullet point list of changes"
+    )
 
 
 def format_diff(diff_text: str) -> str:
@@ -43,30 +53,7 @@ def get_llm_func(model_line: str) -> tuple[callable, str]:
         raise ValueError(f"Invalid model: {model}")
 
 
-def _format_response_xml(xml_response: str) -> tuple[str, str]:
-    root_element: ET.Element = ET.fromstring(xml_response)
-
-    commit_message: str = (
-        root_element.find("commit_message").text.strip()
-        if root_element.find("commit_message") is not None
-        else ""
-    )
-
-    commit_description: str = ""
-    description_element: ET.Element = root_element.find("commit_description")
-    if description_element is not None:
-        commit_description = "\n".join(
-            [
-                line.strip()
-                for line in description_element.text.split("\n")
-                if line.strip()
-            ]
-        )
-
-    return commit_message, commit_description
-
-
-def generate_commit_message(diff_text: str) -> tuple[str, str]:
+def generate_commit_message(diff_text: str) -> CommitMessage:
     tokenizer: tiktoken.Encoding = tiktoken.encoding_for_model("gpt-4o")
     if not diff_text:
         return "No changes to commit", ""
@@ -83,19 +70,13 @@ def generate_commit_message(diff_text: str) -> tuple[str, str]:
     model_name: str
     llm_func, model_name = get_llm_func(model)
 
-    llm_response: str = llm_func(
+    llm_response: CommitMessage = llm_func(
         model=model_name,
         system_prompt=COMMIT_PROMPT_SYSTEM,
         user_prompt=COMMIT_PROMPT_WITH_DESCRIPTION.format(diffs=truncated_diff),
+        response_model=CommitMessage,
     )
-    try:
-        return _format_response_xml(llm_response)
-    except Exception as e:
-        error_file = os.path.expanduser("~/gen-commit-error.txt")
-        with open(error_file, "w") as f:
-            f.write(f"Error: {str(e)}\n\nRaw response:\n{llm_response}")
-        print(f"Error parsing LLM response. Details written to {error_file}")
-        raise
+    return llm_response
 
 
 def initialize() -> bool:
@@ -176,9 +157,11 @@ def gencommit():
             ["git", "diff", "--staged"], text=True
         ).strip()
         formatted_diff: str = format_diff(diff_output)
-        commit_message, commit_description = generate_commit_message(
+        commit_message_object: CommitMessage = generate_commit_message(
             diff_text=formatted_diff
         )
+        commit_message = commit_message_object.commit_message
+        commit_description = commit_message_object.commit_description
     else:
         commit_message: str = found_args.m if has_message else "Initial commit"
         commit_description: str = found_args.d if has_description else ""

@@ -1,12 +1,18 @@
 import os
+
+import instructor
 from anthropic import Anthropic
 from anthropic.types.message import Message
 from openai import OpenAI
 from openai.types.chat import ChatCompletion
+from pydantic import BaseModel
+
 from .config import read_config
 
 
-def anthropic_chat(model: str, system_prompt: str, user_prompt: str) -> str:
+def anthropic_chat(
+    model: str, system_prompt: str, user_prompt: str, response_model: BaseModel
+) -> BaseModel:
     config: dict = read_config()
     api_key: str = config.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -15,7 +21,7 @@ def anthropic_chat(model: str, system_prompt: str, user_prompt: str) -> str:
     if not api_key:
         raise ValueError("ANTHROPIC_API_KEY not found in environment or config")
 
-    client: Anthropic = Anthropic(api_key=api_key)
+    client: Anthropic = instructor.from_anthropic(Anthropic(api_key=api_key))
     response: Message = client.messages.create(
         model=model,
         system=system_prompt,
@@ -24,11 +30,14 @@ def anthropic_chat(model: str, system_prompt: str, user_prompt: str) -> str:
         ],
         max_tokens=1024,
         temperature=0,
+        response_model=response_model,
     )
-    return response.content[0].text
+    return response
 
 
-def openai_chat(model: str, system_prompt: str, user_prompt: str) -> str:
+def openai_chat(
+    model: str, system_prompt: str, user_prompt: str, response_model: BaseModel
+) -> BaseModel:
     config: dict = read_config()
     api_key: str = config.get("OPENAI_API_KEY")
     if not api_key:
@@ -37,7 +46,7 @@ def openai_chat(model: str, system_prompt: str, user_prompt: str) -> str:
     if not api_key:
         raise ValueError("OPENAI_API_KEY not found in environment or config")
 
-    client: OpenAI = OpenAI(api_key=api_key)
+    client: OpenAI = instructor.from_openai(OpenAI(api_key=api_key))
     response: ChatCompletion = client.chat.completions.create(
         model=model,
         messages=[
@@ -46,5 +55,6 @@ def openai_chat(model: str, system_prompt: str, user_prompt: str) -> str:
         ],
         max_tokens=1024,
         temperature=0,
+        response_model=response_model,
     )
-    return response.choices[0].message.content
+    return response

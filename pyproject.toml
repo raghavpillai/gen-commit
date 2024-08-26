@@ -4,13 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gen-commit"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
     "openai",
     "anthropic",
     "tiktoken",
     "tomli",
     "aiohttp",
+    "instructor",
 ]
 requires-python = ">=3.11"
 authors = [
