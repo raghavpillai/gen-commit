@@ -166,14 +166,12 @@ def gencommit():
         commit_message: str = found_args.m if has_message else "Initial commit"
         commit_description: str = found_args.d if has_description else ""
 
-    print(commit_message)
-    print(commit_description)
-    # commit_command: str
-    # if commit_description:
-    #     commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}" -m "{commit_description}"'
-    # else:
-    #     commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}"'
-    # os.system(commit_command)
+    commit_command: str
+    if commit_description:
+        commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}" -m "{commit_description}"'
+    else:
+        commit_command = f'git commit {" ".join(unknown_args)} -m "{commit_message}"'
+    os.system(commit_command)
 
 
 if __name__ == "__main__":
