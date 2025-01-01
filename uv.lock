@@ -286,7 +286,7 @@ wheels = [
 
 [[package]]
 name = "gen-commit"
-version = "0.8.6"
+version = "0.8.7"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -299,7 +299,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiohttp" },
+    { name = "aiohttp", specifier = ">=3.10.11" },
     { name = "anthropic" },
     { name = "instructor" },
     { name = "openai" },
