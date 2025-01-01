@@ -88,7 +88,7 @@ Go to `~/.gen-commit` and add your OpenAI or Anthropic API key.
 ### Configuration
 
 ```bash
-MODEL=<provider:model (i.e. openai:gpt-4o or anthropic:claude-3-haiku-20240307)>
+MODEL=<provider:model (i.e. openai:gpt-4o or anthropic:claude-3-5-sonnet-20241022)>
 OPENAI_API_KEY=<your openai api key>
 ANTHROPIC_API_KEY=<your anthropic api key>
 ```

@@ -94,7 +94,7 @@ def initialize() -> bool:
 
     with open(config_file, "w") as f:
         f.write(
-            "MODEL=anthropic:claude-3-5-sonnet-20240620\nOPENAI_API_KEY=\nANTHROPIC_API_KEY="
+            "MODEL=anthropic:claude-3-5-sonnet-20241022\nOPENAI_API_KEY=\nANTHROPIC_API_KEY="
         )
     return True
 
