@@ -15,11 +15,15 @@ from .utils.prompts import (
 
 CONFIG: dict = read_config()
 MAX_LINE_LENGTH: int = CONFIG.get("MAX_LINE_LENGTH", 300)
-MAX_TOKENS_ALLOWED: int = CONFIG.get("MAX_TOKENS_ALLOWED", 20480)
+MAX_TOKENS_ALLOWED: int = CONFIG.get("MAX_TOKENS_ALLOWED", 30000)
 VERSION: str = read_version_from_pyproject()
 
 
 class CommitMessage(BaseModel):
+    thinking: str = Field(
+        ...,
+        description="Your concise thought process of the diffs",
+    )
     commit_message: str = Field(
         ..., description="Brief descriptive commit message in no longer than 10 words"
     )
@@ -29,17 +33,39 @@ class CommitMessage(BaseModel):
 
 
 def format_diff(diff_text: str) -> str:
-    added_lines: list[str] = []
-    removed_lines: list[str] = []
-    all_lines: list[str] = diff_text.split("\n")
-    for line in all_lines:
-        if line.startswith("+"):
-            added_lines.append(line[:MAX_LINE_LENGTH])
-        elif line.startswith("-"):
-            removed_lines.append(line[:MAX_LINE_LENGTH])
-    formatted_diff_text: str = (
-        "ADDED:\n" + "\n".join(added_lines) + "\nREMOVED:\n" + "\n".join(removed_lines)
-    )
+    file_changes: dict[str, list[tuple[str, str]]] = {}
+    current_file: str = ""
+
+    for line in diff_text.split("\n"):
+        if line.startswith("diff --git"):
+            current_file = line.split()[-1].lstrip("b/")
+            file_changes[current_file] = []
+        elif line.startswith("+") and not line.startswith("+++"):
+            if current_file:
+                file_changes[current_file].append(
+                    ("add", line[1:MAX_LINE_LENGTH].strip())
+                )
+        elif line.startswith("-") and not line.startswith("---"):
+            if current_file:
+                file_changes[current_file].append(
+                    ("remove", line[1:MAX_LINE_LENGTH].strip())
+                )
+
+    # Format into a structured output
+    formatted_diff_text: str = "### Git Changes Summary ###\n\n"
+    for filename, changes in file_changes.items():
+        formatted_diff_text += f"File: {filename}\n"
+        formatted_diff_text += "Changes:\n"
+        limit: int = 30 if filename.endswith(".lock") else 2000
+        for change_type, content in changes[:limit]:
+            prefix = "+" if change_type == "add" else "-"
+            formatted_diff_text += f"{prefix} {content}\n"
+        if len(changes) > limit:
+            formatted_diff_text += (
+                f"\n... ({len(changes) - limit} additional changes truncated)\n"
+            )
+        formatted_diff_text += "\n"
+
     return formatted_diff_text
 
 
