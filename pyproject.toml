@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gen-commit"
-version = "0.8.7"
+version = "1.0.0"
 dependencies = [
     "openai",
     "tiktoken>=0.9.0",
