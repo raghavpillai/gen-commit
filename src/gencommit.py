@@ -7,7 +7,7 @@ import tiktoken
 from pydantic import BaseModel, Field
 
 from .utils.config import read_config, read_version_from_pyproject
-from .utils.llm_wrapper import anthropic_chat, openai_chat
+from .utils.llm_wrapper import chat
 from .utils.prompts import (
     COMMIT_PROMPT_SYSTEM,
     COMMIT_PROMPT_WITH_DESCRIPTION,
@@ -22,7 +22,7 @@ VERSION: str = read_version_from_pyproject()
 class CommitMessage(BaseModel):
     thinking: str = Field(
         ...,
-        description="Your concise thought process of the diffs",
+        description="A scratchpad to put your concise reasoning and chain of thought after looking at the diffs.",
     )
     commit_message: str = Field(
         ..., description="Brief descriptive commit message in no longer than 10 words"
@@ -69,16 +69,6 @@ def format_diff(diff_text: str) -> str:
     return formatted_diff_text
 
 
-def get_llm_func(model_line: str) -> tuple[callable, str]:
-    provider, model = model_line.lower().split(":", 1)
-    if provider == "openai":
-        return openai_chat, model
-    elif provider == "anthropic":
-        return anthropic_chat, model
-    else:
-        raise ValueError(f"Invalid model: {model}")
-
-
 def generate_commit_message(diff_text: str) -> CommitMessage:
     tokenizer: tiktoken.Encoding = tiktoken.encoding_for_model("gpt-4o")
     if not diff_text:
@@ -87,25 +77,20 @@ def generate_commit_message(diff_text: str) -> CommitMessage:
     token_list: list[int] = tokenizer.encode(diff_text)
     truncated_tokens: list[int] = token_list[:MAX_TOKENS_ALLOWED]
     truncated_diff: str = tokenizer.decode(truncated_tokens)
-    config: dict = read_config()
-    model: str = config.get("MODEL")
-    if not model:
-        raise ValueError("MODEL not found in config")
 
-    llm_func: callable
-    model_name: str
-    llm_func, model_name = get_llm_func(model)
-
-    llm_response: CommitMessage = llm_func(
-        model=model_name,
-        system_prompt=COMMIT_PROMPT_SYSTEM,
-        user_prompt=COMMIT_PROMPT_WITH_DESCRIPTION.format(diffs=truncated_diff),
-        response_model=CommitMessage,
-    )
+    try:
+        llm_response: CommitMessage = chat(
+            system_prompt=COMMIT_PROMPT_SYSTEM(),
+            user_prompt=COMMIT_PROMPT_WITH_DESCRIPTION(truncated_diff),
+            response_model=CommitMessage,
+        )
+    except Exception as e:
+        print(f"Error generating commit message: {e}")
+        raise e
     return llm_response
 
 
-def initialize() -> bool:
+def _initialize() -> bool:
     home_dir: str = os.path.expanduser("~")
     config_file: str = os.path.join(home_dir, ".gen-commit")
     if os.path.exists(config_file):
@@ -141,7 +126,7 @@ def gencommit():
     has_description: bool = found_args.d is not None
 
     if found_args.init:
-        success: bool = initialize()
+        success: bool = _initialize()
         if success:
             print("gen-commit initialized successfully, wrote config to ~/.gen-commit")
             sys.exit(0)

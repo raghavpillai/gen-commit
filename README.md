@@ -83,14 +83,15 @@ Once you have it installed, initialize gencommit
 gencommit --init
 ```
 
-Go to `~/.gen-commit` and add your OpenAI or Anthropic API key.
+Go to `~/.gen-commit` and add your OpenAI, Anthropic, or Google API key.
 
 ### Configuration
 
 ```bash
-MODEL=<provider:model (i.e. openai:gpt-4o or anthropic:claude-3-5-sonnet-20241022)>
+MODEL=<provider:model (i.e. openai:gpt-4.1-mini-2025-04-14, anthropic:claude-3-5-haiku-20241022, or google:gemini-2.5-flash-lite)>
 OPENAI_API_KEY=<your openai api key>
 ANTHROPIC_API_KEY=<your anthropic api key>
+GOOGLE_API_KEY=<your google api key>
 ```
 
 OPTIONAL:
@@ -99,5 +100,3 @@ OPTIONAL:
 MAX_LINE_LENGTH=<number>
 MAX_TOKENS_ALLOWED=<number>
 ```
-
-At the moment only OpenAI and Anthropic are supported.
