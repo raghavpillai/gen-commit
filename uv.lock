@@ -101,7 +101,7 @@ wheels = [
 
 [[package]]
 name = "gen-commit"
-version = "0.8.7"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "openai" },
