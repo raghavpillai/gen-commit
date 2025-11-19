@@ -1,7 +1,6 @@
-def COMMIT_PROMPT_SYSTEM() -> str:
-    return """
-You are senior engineer who is looking at your git diff and trying to write a commit message. \
-Your task is to create a descriptive commit message based on this diff.
+export function COMMIT_PROMPT_SYSTEM(): string {
+  return `
+You are senior engineer who is looking at your git diff and trying to write a commit message. Your task is to create a descriptive commit message based on this diff.
 
 
 <guidelines>
@@ -14,16 +13,17 @@ Follow these guidelines:
 - For large changes, summarize the overall impact rather than listing every small modification.
 - You can use incomplete sentences or phrases to get your point across.
 </guidelines>
-""".strip()
+`.trim();
+}
 
-
-def COMMIT_PROMPT_WITH_DESCRIPTION(diffs: str) -> str:
-    return f"""
+export function COMMIT_PROMPT_WITH_DESCRIPTION(diffs: string): string {
+  return `
 Given the following code changes:
 
 <diffs>
-{diffs}
+${diffs}
 </diffs>
 
 Please generate a concise and informative git commit message and description based on these changes.
-""".strip()
+`.trim();
+}
