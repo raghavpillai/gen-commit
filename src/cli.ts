@@ -60,57 +60,8 @@ function parseArgs(): Args {
   return parsed;
 }
 
-function formatDiff(diffText: string, maxLineLength: number): string {
-  const fileChanges: Record<
-    string,
-    Array<{ type: "add" | "remove"; content: string }>
-  > = {};
-  let currentFile = "";
-
-  for (const line of diffText.split("\n")) {
-    if (line.startsWith("diff --git")) {
-      const parts = line.split(" ");
-      currentFile = parts[parts.length - 1].replace(/^b\//, "");
-      fileChanges[currentFile] = [];
-    } else if (line.startsWith("+") && !line.startsWith("+++")) {
-      if (currentFile) {
-        fileChanges[currentFile].push({
-          type: "add",
-          content: line.slice(1, maxLineLength + 1).trim(),
-        });
-      }
-    } else if (line.startsWith("-") && !line.startsWith("---")) {
-      if (currentFile) {
-        fileChanges[currentFile].push({
-          type: "remove",
-          content: line.slice(1, maxLineLength + 1).trim(),
-        });
-      }
-    }
-  }
-
-  let formattedDiff = "### Git Changes Summary ###\n\n";
-
-  for (const [filename, changes] of Object.entries(fileChanges)) {
-    formattedDiff += `File: ${filename}\n`;
-    formattedDiff += "Changes:\n";
-
-    const limit = filename.endsWith(".lock") ? 30 : 2000;
-    const limitedChanges = changes.slice(0, limit);
-
-    for (const change of limitedChanges) {
-      const prefix = change.type === "add" ? "+" : "-";
-      formattedDiff += `${prefix} ${change.content}\n`;
-    }
-
-    if (changes.length > limit) {
-      formattedDiff += `\n... (${changes.length - limit} additional changes truncated)\n`;
-    }
-
-    formattedDiff += "\n";
-  }
-
-  return formattedDiff;
+function formatDiff(diffText: string): string {
+  return diffText;
 }
 
 function estimateTokens(text: string): number {
@@ -148,17 +99,11 @@ async function generateCommitMessage(
         console.log(`Retrying... (attempt ${attempt}/${maxRetries})`);
       }
 
-      const startTime = Date.now();
-
       const llmResponse = await chat<typeof CommitMessageSchema>(
         COMMIT_PROMPT_SYSTEM(),
         COMMIT_PROMPT_WITH_DESCRIPTION(truncatedDiff),
         CommitMessageSchema,
       );
-
-      const endTime = Date.now();
-      const duration = ((endTime - startTime) / 1000).toFixed(2);
-      console.log(`[DEBUG] AI generation completed in ${duration}s`);
 
       return llmResponse;
     } catch (error) {
@@ -180,7 +125,6 @@ const DEFAULT_CONFIG_TEMPLATE = `MODEL=openai:gpt-5-mini
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 GOOGLE_API_KEY=
-MAX_LINE_LENGTH=300
 MAX_TOKENS_ALLOWED=30000`;
 
 async function initialize(): Promise<boolean> {
@@ -246,7 +190,6 @@ async function main() {
     throw error;
   }
 
-  const MAX_LINE_LENGTH = parseInt(config.MAX_LINE_LENGTH || "300", 10);
   const MAX_TOKENS_ALLOWED = parseInt(config.MAX_TOKENS_ALLOWED || "30000", 10);
 
   const hasMessage = args.m !== undefined;
@@ -297,15 +240,19 @@ async function main() {
 
   if (commitsExist) {
     try {
-      const diffOutput = execSync("git diff --staged", {
+      const diffCommand = args.unknownArgs.includes("-a")
+        ? "git diff HEAD"
+        : "git diff --staged";
+      const diffOutput = execSync(diffCommand, {
         encoding: "utf-8",
         stdio: "pipe",
       }).trim();
-      const formattedDiff = formatDiff(diffOutput, MAX_LINE_LENGTH);
+      const formattedDiff = formatDiff(diffOutput);
       const commitMessageObject = await generateCommitMessage(
         formattedDiff,
         MAX_TOKENS_ALLOWED,
       );
+
       commitMessage =
         hasMessage && args.m ? args.m : commitMessageObject.commit_message;
       commitDescription =
@@ -326,15 +273,15 @@ async function main() {
     gitArgs.push("-m", commitDescription);
   }
 
-  // const result = spawnSync("git", gitArgs, {
-  //   encoding: "utf-8",
-  //   stdio: "inherit",
-  // });
+  const result = spawnSync("git", gitArgs, {
+    encoding: "utf-8",
+    stdio: "inherit",
+  });
 
-  // if (result.error || result.status !== 0) {
-  //   console.error("Error executing git commit");
-  //   process.exit(1);
-  // }
+  if (result.error || result.status !== 0) {
+    console.error("Error executing git commit");
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {

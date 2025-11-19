@@ -11,7 +11,6 @@ const ConfigSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   GOOGLE_API_KEY: z.string().optional(),
-  MAX_LINE_LENGTH: z.string().optional(),
   MAX_TOKENS_ALLOWED: z.string().optional(),
 });
 

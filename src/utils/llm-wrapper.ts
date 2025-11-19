@@ -91,7 +91,17 @@ export async function chat<T extends z.ZodType>(
       system: systemPrompt,
       prompt: userPrompt,
       abortSignal: controller.signal,
-      reasoningEffort: "minimal",
+      providerOptions: {
+        openai: {
+          reasoningEffort: "minimal",
+        },
+        anthropic: {
+          reasoningEffort: "minimal",
+        },
+        google: {
+          reasoningEffort: "minimal",
+        },
+      },
     });
 
     return result.object as z.infer<T>;
