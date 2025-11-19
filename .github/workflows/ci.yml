@@ -45,7 +45,7 @@ jobs:
       - name: Test CLI installation
         run: |
           npm pack
-          npm install -g gen-commit-*.tgz
+          npm install -g raghavp-gen-commit-*.tgz
           gencommit --version
 
   security:
