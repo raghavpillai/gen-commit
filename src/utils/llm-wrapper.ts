@@ -1,6 +1,6 @@
-import { anthropic } from "@ai-sdk/anthropic";
-import { google } from "@ai-sdk/google";
-import { openai } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import type { z } from "zod";
 import { type Config, readConfig } from "./config";
@@ -56,36 +56,33 @@ export function getModel(params: ModelParams) {
   const { provider, modelName, apiKey } = params;
 
   switch (provider) {
-    case "openai":
-      return openai(modelName, { apiKey });
-    case "anthropic":
-      return anthropic(modelName, { apiKey });
-    case "google":
-      return google(modelName, { apiKey });
+    case "openai": {
+      const openai = createOpenAI({ apiKey });
+      return openai(modelName);
+    }
+    case "anthropic": {
+      const anthropic = createAnthropic({ apiKey });
+      return anthropic(modelName);
+    }
+    case "google": {
+      const google = createGoogleGenerativeAI({ apiKey });
+      return google(modelName);
+    }
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
-}
-
-export interface ChatOptions {
-  temperature?: number;
-  maxTokens?: number;
-  timeout?: number;
 }
 
 export async function chat<T extends z.ZodType>(
   systemPrompt: string,
   userPrompt: string,
   schema: T,
-  options: ChatOptions = {},
 ): Promise<z.infer<T>> {
-  const { temperature = 0, maxTokens = 1024, timeout = 60000 } = options;
-
   const params = getModelParams();
   const model = getModel(params);
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   try {
     const result = await generateObject({
@@ -93,9 +90,8 @@ export async function chat<T extends z.ZodType>(
       schema,
       system: systemPrompt,
       prompt: userPrompt,
-      temperature,
-      maxTokens,
       abortSignal: controller.signal,
+      reasoningEffort: "minimal",
     });
 
     return result.object as z.infer<T>;

@@ -42,8 +42,7 @@ export function readConfig(): Config {
         const key = trimmedLine.slice(0, separatorIndex).trim();
         const value = trimmedLine.slice(separatorIndex + 1).trim();
         if (key) {
-          // Normalize empty strings to undefined for optional fields
-          config[key] = value || undefined;
+          config[key] = value;
         }
       }
     }
@@ -68,9 +67,7 @@ export function readVersionFromPackageJson(): string {
       return packageJson.version || "0.0.0";
     }
   } catch (_error) {
-    // Fallback: try to import from package.json directly
     try {
-      // For when running as installed package
       const packageJson = require("../../package.json");
       return packageJson.version || "0.0.0";
     } catch {

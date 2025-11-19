@@ -1,0 +1,60 @@
+{
+  "name": "gen-commit",
+  "version": "2.0.0",
+  "description": "Auto-generate git commit messages using AI",
+  "type": "module",
+  "bin": {
+    "gencommit": "./dist/cli.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun run lint && bun build src/cli.ts --outdir dist --target node --format esm --minify --sourcemap=external && chmod +x dist/cli.js",
+    "dev": "bun --watch src/cli.ts",
+    "prepublishOnly": "bun run build",
+    "test": "bun test",
+    "link": "npm link",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "format": "biome format --write src/"
+  },
+  "keywords": [
+    "git",
+    "commit",
+    "ai",
+    "llm",
+    "cli",
+    "automation"
+  ],
+  "author": {
+    "name": "Raghav Pillai",
+    "email": "me@raghav.sh"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raghavpillai/gen-commit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/raghavpillai/gen-commit/issues"
+  },
+  "homepage": "https://github.com/raghavpillai/gen-commit#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.45",
+    "@ai-sdk/google": "^2.0.36",
+    "@ai-sdk/openai": "^2.0.68",
+    "ai": "^5.0.95",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.6",
+    "@types/bun": "latest",
+    "typescript": "^5.7.0"
+  }
+}

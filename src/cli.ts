@@ -89,7 +89,6 @@ function formatDiff(diffText: string, maxLineLength: number): string {
     }
   }
 
-  // Format into structured output
   let formattedDiff = "### Git Changes Summary ###\n\n";
 
   for (const [filename, changes] of Object.entries(fileChanges)) {
@@ -114,7 +113,6 @@ function formatDiff(diffText: string, maxLineLength: number): string {
   return formattedDiff;
 }
 
-// Simple tokenizer approximation (4 chars ≈ 1 token)
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
@@ -125,9 +123,11 @@ function truncateToTokenLimit(text: string, maxTokens: number): string {
     return text;
   }
 
-  // Approximate character limit
   const charLimit = maxTokens * 4;
-  return text.slice(0, charLimit);
+  const halfLimit = Math.floor(charLimit / 2);
+  const start = text.slice(0, halfLimit);
+  const end = text.slice(-halfLimit);
+  return `${start}\n\n... [truncated] ...\n\n${end}`;
 }
 
 async function generateCommitMessage(
@@ -148,11 +148,18 @@ async function generateCommitMessage(
         console.log(`Retrying... (attempt ${attempt}/${maxRetries})`);
       }
 
+      const startTime = Date.now();
+
       const llmResponse = await chat<typeof CommitMessageSchema>(
         COMMIT_PROMPT_SYSTEM(),
         COMMIT_PROMPT_WITH_DESCRIPTION(truncatedDiff),
         CommitMessageSchema,
       );
+
+      const endTime = Date.now();
+      const duration = ((endTime - startTime) / 1000).toFixed(2);
+      console.log(`[DEBUG] AI generation completed in ${duration}s`);
+
       return llmResponse;
     } catch (error) {
       lastError = error as Error;
@@ -169,7 +176,7 @@ async function generateCommitMessage(
   throw lastError;
 }
 
-const DEFAULT_CONFIG_TEMPLATE = `MODEL=anthropic:claude-3-5-sonnet-20241022
+const DEFAULT_CONFIG_TEMPLATE = `MODEL=openai:gpt-5-mini
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 GOOGLE_API_KEY=
@@ -245,7 +252,6 @@ async function main() {
   const hasMessage = args.m !== undefined;
   const hasDescription = args.d !== undefined;
 
-  // Check if there are any commits
   let commitsExist = true;
   try {
     execSync("git rev-parse --verify HEAD", {
@@ -256,7 +262,6 @@ async function main() {
     commitsExist = false;
   }
 
-  // Check for unstaged changes if -a flag is present
   if (args.unknownArgs.includes("-a")) {
     try {
       const unstagedChanges = execSync("git status --porcelain", {
@@ -273,7 +278,6 @@ async function main() {
     }
   }
 
-  // Check for staged changes
   try {
     const stagedChanges = execSync("git diff --staged --name-only", {
       encoding: "utf-8",
@@ -317,22 +321,20 @@ async function main() {
     commitDescription = hasDescription && args.d ? args.d : "";
   }
 
-  // Build git commit arguments (no shell escaping needed with spawnSync)
   const gitArgs = ["commit", ...args.unknownArgs, "-m", commitMessage];
   if (commitDescription) {
     gitArgs.push("-m", commitDescription);
   }
 
-  // Use spawnSync instead of execSync to avoid shell injection
-  const result = spawnSync("git", gitArgs, {
-    encoding: "utf-8",
-    stdio: "inherit",
-  });
+  // const result = spawnSync("git", gitArgs, {
+  //   encoding: "utf-8",
+  //   stdio: "inherit",
+  // });
 
-  if (result.error || result.status !== 0) {
-    console.error("Error executing git commit");
-    process.exit(1);
-  }
+  // if (result.error || result.status !== 0) {
+  //   console.error("Error executing git commit");
+  //   process.exit(1);
+  // }
 }
 
 main().catch((error) => {
