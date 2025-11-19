@@ -1,13 +1,13 @@
 {
-  "name": "gen-commit",
-  "version": "2.0.0",
+  "name": "@raghavp/gen-commit",
+  "version": "2.0.2",
   "description": "Auto-generate git commit messages using AI",
   "type": "module",
   "bin": {
     "gencommit": "./dist/cli.js"
   },
   "files": [
-    "dist/**/*",
+    "dist",
     "README.md",
     "LICENSE"
   ],
@@ -34,6 +34,9 @@
     "email": "me@raghav.sh"
   },
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/raghavpillai/gen-commit.git"
